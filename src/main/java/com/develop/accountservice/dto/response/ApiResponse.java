@@ -9,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class ApiResponse<T> {
@@ -22,13 +21,13 @@ public class ApiResponse<T> {
         this.message = OK.getReasonPhrase();
     }
 
-    public ApiResponse(String code, String message) {
-        this.code = Integer.parseInt(code);
+    public ApiResponse(int code, String message) {
+        this.code = code;
         this.message = message;
     }
 
-    public ApiResponse(String code, String message, T result) {
-        this.code = Integer.parseInt(code);
+    public ApiResponse(int code, String message, T result) {
+        this.code = code;
         this.message = message;
         this.result = result;
     }
@@ -56,6 +55,13 @@ public class ApiResponse<T> {
         ApiResponse<Void> response = new ApiResponse<>();
         response.setCode(1000);
         response.setMessage("Xóa tài nguyên thành công");
+        return response;
+    }
+
+    public static ApiResponse<Void> deleted(String message) {
+        ApiResponse<Void> response = new ApiResponse<>();
+        response.setCode(1000);
+        response.setMessage(message);
         return response;
     }
 

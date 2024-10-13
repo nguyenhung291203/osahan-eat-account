@@ -16,8 +16,8 @@ public enum AccountErrorCode implements BaseErrorCode {
     USERNAME_INVALID(3003, "Tên đăng nhập không hợp lệ", HttpStatus.BAD_REQUEST),
     USERNAME_EMPTY(3004, "Tên người dùng không được để trống", HttpStatus.BAD_REQUEST),
     PASSWORD_EMPTY(3005, "Mật khẩu không được để trống", HttpStatus.BAD_REQUEST),
-    INCORRECT_PASSWORD(3006, "Mật khẩu không chính xác", HttpStatus.UNAUTHORIZED);
-
+    INCORRECT_PASSWORD(3006, "Tài khoản hoặc mật khẩu không chính xác", HttpStatus.UNAUTHORIZED),
+    ACCOUNT_LOCKED(3007, "Tài khoản đã bị khóa", HttpStatus.FORBIDDEN);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

@@ -1,11 +1,10 @@
 package com.develop.accountservice.entity;
 
-import java.time.LocalDate;
-
 import jakarta.persistence.*;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "profiles")
@@ -31,8 +30,13 @@ public class Profile {
     @Column(length = 255)
     String address;
 
+    @Column(length = 255, unique = true)
+    String email;
+
     @OneToOne
     @MapsId
     @JoinColumn(name = "id")
-    private Account account;
+    Account account;
+
+
 }

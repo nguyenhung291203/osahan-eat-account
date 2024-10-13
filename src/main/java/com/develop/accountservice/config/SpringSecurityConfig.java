@@ -1,10 +1,8 @@
 package com.develop.accountservice.config;
 
-import com.develop.accountservice.component.JwtAuthenticationFilter;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +19,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
+import com.develop.accountservice.component.JwtAuthenticationFilter;
+import com.develop.accountservice.constant.RoleCode;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Configuration
@@ -31,12 +34,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SpringSecurityConfig {
     final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Value("${api.prefix}")
     String apiPrefix;
+
     private String[] getWhiteListUrls() {
-        return new String[]{
-                String.format("%s/roles", apiPrefix),
-                String.format("%s/accounts/register", apiPrefix)
+        return new String[] {
+            String.format("%s/roles", apiPrefix),
+            String.format("%s/accounts/register", apiPrefix),
+            String.format("%s/accounts/login/**", apiPrefix),
+            String.format("%s/accounts/logout", apiPrefix),
+            String.format("%s/accounts/refresh", apiPrefix),
+            String.format("%s/accounts/view/**", apiPrefix),
         };
     }
 
@@ -54,9 +63,13 @@ public class SpringSecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req.requestMatchers(getWhiteListUrls())
-                        .permitAll() // Đảm bảo các URL này được phép truy cập
+                        .permitAll()
+                        .requestMatchers(
+                                String.format("%s/accounts/my-info", apiPrefix),
+                                String.format("%s/accounts/{id}/upload-avatar", apiPrefix))
+                        .hasAnyAuthority(RoleCode.CUSTOMER, RoleCode.IT_ADMIN, RoleCode.MANAGER, RoleCode.EMPLOYEE)
                         .anyRequest()
-                        .authenticated()) // Các yêu cầu khác cần được xác thực
+                        .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -64,7 +77,8 @@ public class SpringSecurityConfig {
             CorsConfiguration configuration = new CorsConfiguration();
             configuration.setAllowedOrigins(List.of("*"));
             configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-            configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "cache-control"));
+            configuration.setAllowedHeaders(
+                    Arrays.asList("authorization", "content-type", "x-auth-token", "cache-control"));
             configuration.setExposedHeaders(List.of("x-auth-token"));
             UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
             source.registerCorsConfiguration("/**", configuration);
@@ -73,5 +87,4 @@ public class SpringSecurityConfig {
 
         return http.build();
     }
-
 }
